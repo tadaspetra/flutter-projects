@@ -1,0 +1,6 @@
+include: package:lints/recommended.yaml
+
+analyzer:
+  errors:
+    # treat missing returns as a warning (not a hint)
+    library_prefixes: ignore

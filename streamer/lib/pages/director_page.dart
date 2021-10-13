@@ -1,10 +1,10 @@
+import 'package:agora_rtc_engine/rtc_remote_view.dart' as RtcRemoteView;
+import 'package:circular_menu/circular_menu.dart';
 import 'package:creatorstudio/controllers/director_controller.dart';
 import 'package:creatorstudio/models/director_model.dart';
 import 'package:creatorstudio/models/stream.dart';
 import 'package:flutter/material.dart';
-import 'package:agora_rtc_engine/rtc_remote_view.dart' as RtcRemoteView;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:circular_menu/circular_menu.dart';
 
 class BroadcastPage extends StatefulWidget {
   final String channelName;
@@ -293,81 +293,7 @@ class _BroadcastPageState extends State<BroadcastPage> {
                   return Row(
                     children: [
                       Expanded(
-                        child: Container(
-                          child: Stack(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: directorData.activeUsers.elementAt(index).videoDisabled
-                                    ? Stack(children: [
-                                        Container(
-                                          color: Colors.black,
-                                        ),
-                                        Align(
-                                          alignment: Alignment.center,
-                                          child: Text(
-                                            "Video Off",
-                                            style: TextStyle(color: Colors.white),
-                                          ),
-                                        )
-                                      ])
-                                    : Stack(children: [
-                                        RtcRemoteView.SurfaceView(uid: directorData.activeUsers.elementAt(index).uid),
-                                        Align(
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                                borderRadius: BorderRadius.only(topLeft: Radius.circular(10)),
-                                                color: directorData.activeUsers.elementAt(index).backgroundColor!.withOpacity(1)),
-                                            padding: EdgeInsets.all(16),
-                                            child: Text(
-                                              directorData.activeUsers.elementAt(index).name ?? "name error",
-                                              style: TextStyle(color: Colors.white),
-                                            ),
-                                          ),
-                                          alignment: Alignment.bottomRight,
-                                        ),
-                                      ]),
-                              ),
-                              Container(
-                                decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: Colors.black54),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      onPressed: () {
-                                        if (directorData.activeUsers.elementAt(index).muted) {
-                                          directorNotifier.toggleUserAudio(index: index, muted: true);
-                                        } else {
-                                          directorNotifier.toggleUserAudio(index: index, muted: false);
-                                        }
-                                      },
-                                      icon: Icon(Icons.mic_off),
-                                      color: directorData.activeUsers.elementAt(index).muted ? Colors.red : Colors.white,
-                                    ),
-                                    IconButton(
-                                      onPressed: () {
-                                        if (directorData.activeUsers.elementAt(index).videoDisabled) {
-                                          directorNotifier.toggleUserVideo(index: index, enable: false);
-                                        } else {
-                                          directorNotifier.toggleUserVideo(index: index, enable: true);
-                                        }
-                                      },
-                                      icon: Icon(Icons.videocam_off),
-                                      color: directorData.activeUsers.elementAt(index).videoDisabled ? Colors.red : Colors.white,
-                                    ),
-                                    IconButton(
-                                      onPressed: () {
-                                        directorNotifier.demoteToLobbyUser(uid: directorData.activeUsers.elementAt(index).uid);
-                                      },
-                                      icon: Icon(Icons.arrow_downward),
-                                      color: Colors.white,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        child: StageUser(directorData: directorData, directorNotifier: directorNotifier, index: index),
                       ),
                     ],
                   );
@@ -407,47 +333,10 @@ class _BroadcastPageState extends State<BroadcastPage> {
                   return Row(
                     children: [
                       Expanded(
-                        child: Container(
-                          child: Stack(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: directorData.lobbyUsers.elementAt(index).videoDisabled
-                                    ? Stack(children: [
-                                        Container(
-                                          color: (directorData.lobbyUsers.elementAt(index).backgroundColor != null)
-                                              ? directorData.lobbyUsers.elementAt(index).backgroundColor!.withOpacity(1)
-                                              : Colors.black,
-                                        ),
-                                        Align(
-                                          alignment: Alignment.center,
-                                          child: Text(
-                                            directorData.lobbyUsers.elementAt(index).name ?? "error name",
-                                            style: TextStyle(color: Colors.white),
-                                          ),
-                                        )
-                                      ])
-                                    : RtcRemoteView.SurfaceView(
-                                        uid: directorData.lobbyUsers.elementAt(index).uid,
-                                      ),
-                              ),
-                              Container(
-                                decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: Colors.black54),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      onPressed: () {
-                                        directorNotifier.promoteToActiveUser(uid: directorData.lobbyUsers.elementAt(index).uid);
-                                      },
-                                      icon: Icon(Icons.arrow_upward),
-                                      color: Colors.white,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
+                        child: LobbyUser(
+                          directorData: directorData,
+                          directorNotifier: directorNotifier,
+                          index: index,
                         ),
                       ),
                     ],
@@ -459,5 +348,156 @@ class _BroadcastPageState extends State<BroadcastPage> {
         ),
       ));
     });
+  }
+}
+
+class StageUser extends StatelessWidget {
+  const StageUser({
+    Key? key,
+    required this.directorData,
+    required this.directorNotifier,
+    required this.index,
+  }) : super(key: key);
+
+  final DirectorModel directorData;
+  final DirectorController directorNotifier;
+  final int index;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: directorData.activeUsers.elementAt(index).videoDisabled
+                ? Stack(children: [
+                    Container(
+                      color: Colors.black,
+                    ),
+                    Align(
+                      alignment: Alignment.center,
+                      child: Text(
+                        "Video Off",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    )
+                  ])
+                : Stack(children: [
+                    RtcRemoteView.SurfaceView(uid: directorData.activeUsers.elementAt(index).uid),
+                    Align(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.only(topLeft: Radius.circular(10)),
+                            color: directorData.activeUsers.elementAt(index).backgroundColor!.withOpacity(1)),
+                        padding: EdgeInsets.all(16),
+                        child: Text(
+                          directorData.activeUsers.elementAt(index).name ?? "name error",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      alignment: Alignment.bottomRight,
+                    ),
+                  ]),
+          ),
+          Container(
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: Colors.black54),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  onPressed: () {
+                    if (directorData.activeUsers.elementAt(index).muted) {
+                      directorNotifier.toggleUserAudio(index: index, muted: true);
+                    } else {
+                      directorNotifier.toggleUserAudio(index: index, muted: false);
+                    }
+                  },
+                  icon: Icon(Icons.mic_off),
+                  color: directorData.activeUsers.elementAt(index).muted ? Colors.red : Colors.white,
+                ),
+                IconButton(
+                  onPressed: () {
+                    if (directorData.activeUsers.elementAt(index).videoDisabled) {
+                      directorNotifier.toggleUserVideo(index: index, enable: false);
+                    } else {
+                      directorNotifier.toggleUserVideo(index: index, enable: true);
+                    }
+                  },
+                  icon: Icon(Icons.videocam_off),
+                  color: directorData.activeUsers.elementAt(index).videoDisabled ? Colors.red : Colors.white,
+                ),
+                IconButton(
+                  onPressed: () {
+                    directorNotifier.demoteToLobbyUser(uid: directorData.activeUsers.elementAt(index).uid);
+                  },
+                  icon: Icon(Icons.arrow_downward),
+                  color: Colors.white,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class LobbyUser extends StatelessWidget {
+  const LobbyUser({
+    Key? key,
+    required this.directorData,
+    required this.directorNotifier,
+    required this.index,
+  }) : super(key: key);
+
+  final DirectorModel directorData;
+  final DirectorController directorNotifier;
+  final int index;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: directorData.lobbyUsers.elementAt(index).videoDisabled
+                ? Stack(children: [
+                    Container(
+                      color: (directorData.lobbyUsers.elementAt(index).backgroundColor != null)
+                          ? directorData.lobbyUsers.elementAt(index).backgroundColor!.withOpacity(1)
+                          : Colors.black,
+                    ),
+                    Align(
+                      alignment: Alignment.center,
+                      child: Text(
+                        directorData.lobbyUsers.elementAt(index).name ?? "error name",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    )
+                  ])
+                : RtcRemoteView.SurfaceView(
+                    uid: directorData.lobbyUsers.elementAt(index).uid,
+                  ),
+          ),
+          Container(
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: Colors.black54),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  onPressed: () {
+                    directorNotifier.promoteToActiveUser(uid: directorData.lobbyUsers.elementAt(index).uid);
+                  },
+                  icon: Icon(Icons.arrow_upward),
+                  color: Colors.white,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

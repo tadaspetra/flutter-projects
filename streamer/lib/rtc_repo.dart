@@ -10,7 +10,8 @@ class RtcRepo {
   Reader read;
   RtcRepo(this.read);
 
-  Future<AgoraRtmChannel?> joinCallAsDirector(RtcEngine engine, AgoraRtmClient client, String channelName, int uid) async {
+  Future<AgoraRtmChannel?> joinCallAsDirector(RtcEngine engine,
+      AgoraRtmClient client, String channelName, int uid) async {
     await [Permission.camera, Permission.microphone].request();
     engine.setEventHandler(
       RtcEngineEventHandler(
@@ -30,17 +31,25 @@ class RtcRepo {
             read(directorController.notifier).removeUser(uid: uid);
           },
           remoteAudioStateChanged: (uid, state, reason, elapsed) {
-            if ((state == AudioRemoteState.Decoding) && (reason == AudioRemoteStateReason.RemoteUnmuted)) {
-              read(directorController.notifier).updateUserAudio(uid: uid, muted: false);
-            } else if ((state == AudioRemoteState.Stopped) && (reason == AudioRemoteStateReason.RemoteMuted)) {
-              read(directorController.notifier).updateUserAudio(uid: uid, muted: true);
+            if ((state == AudioRemoteState.Decoding) &&
+                (reason == AudioRemoteStateReason.RemoteUnmuted)) {
+              read(directorController.notifier)
+                  .updateUserAudio(uid: uid, muted: false);
+            } else if ((state == AudioRemoteState.Stopped) &&
+                (reason == AudioRemoteStateReason.RemoteMuted)) {
+              read(directorController.notifier)
+                  .updateUserAudio(uid: uid, muted: true);
             }
           },
           remoteVideoStateChanged: (uid, state, reason, elapsed) {
-            if ((state == VideoRemoteState.Decoding) && (reason == VideoRemoteStateReason.RemoteUnmuted)) {
-              read(directorController.notifier).updateUserVideo(uid: uid, videoDisabled: false);
-            } else if ((state == VideoRemoteState.Stopped) && (reason == VideoRemoteStateReason.RemoteMuted)) {
-              read(directorController.notifier).updateUserVideo(uid: uid, videoDisabled: true);
+            if ((state == VideoRemoteState.Decoding) &&
+                (reason == VideoRemoteStateReason.RemoteUnmuted)) {
+              read(directorController.notifier)
+                  .updateUserVideo(uid: uid, videoDisabled: false);
+            } else if ((state == VideoRemoteState.Stopped) &&
+                (reason == VideoRemoteStateReason.RemoteMuted)) {
+              read(directorController.notifier)
+                  .updateUserVideo(uid: uid, videoDisabled: true);
             }
           },
           streamPublished: (url, error) {
@@ -61,7 +70,10 @@ class RtcRepo {
       print("Private Message from " + peerId + ": " + (message.text ?? "null"));
     };
     client.onConnectionStateChanged = (int state, int reason) {
-      print('Connection state changed: ' + state.toString() + ', reason: ' + reason.toString());
+      print('Connection state changed: ' +
+          state.toString() +
+          ', reason: ' +
+          reason.toString());
       if (state == 5) {
         client.logout();
         print('Logout.');
@@ -74,14 +86,23 @@ class RtcRepo {
     _channel?.join();
     engine.joinChannel(null, channelName, null, uid);
 
+    _channel?.onAttributesUpdated =
+        (List<AgoraRtmChannelAttribute> attributes) {
+      print(attributes);
+    };
     _channel?.onMemberJoined = (AgoraRtmMember member) {
-      print("Member joined: " + member.userId + ', channel: ' + member.channelId);
+      print(
+          "Member joined: " + member.userId + ', channel: ' + member.channelId);
     };
     _channel?.onMemberLeft = (AgoraRtmMember member) {
       print("Member left: " + member.userId + ', channel: ' + member.channelId);
     };
-    _channel?.onMessageReceived = (AgoraRtmMessage message, AgoraRtmMember member) {
-      print("Public Message from " + member.userId + ": " + (message.text ?? "null"));
+    _channel?.onMessageReceived =
+        (AgoraRtmMessage message, AgoraRtmMember member) {
+      print("Public Message from " +
+          member.userId +
+          ": " +
+          (message.text ?? "null"));
       // List<String> parsedMessage = message.text!.split(" ");
       // switch (parsedMessage[0]) {
       //   case "updateUser":

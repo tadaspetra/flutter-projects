@@ -12,6 +12,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ProviderScope(
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
           canvasColor: Colors.grey[300],
           elevatedButtonTheme: ElevatedButtonThemeData(
